@@ -1,19 +1,29 @@
 package com.example.view;
 
+import com.example.controller.UserController;
 import com.example.model.User;
-import com.example.repository.UserRepository;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * Tela principal da aplicação que permite cadastro, edição e remoção
+ * de usuários através de uma interface Swing. Esta view interage com a
+ * camada de controle (UserController) para realizar operações.
+ */
 public class UserView extends JFrame {
     private final JTextField nameField = new JTextField(20);
     private final JTextField emailField = new JTextField(20);
     private final JPasswordField passwordField = new JPasswordField(20);
     private final JPanel userListPanel = new JPanel();
-    private final UserRepository userRepository = new UserRepository();
+    private final UserController userController = new UserController();
     private User editingUser = null;
 
+    /**
+     * Construtor que configura a interface gráfica, monta os componentes
+     * e carrega a lista de usuários via controller.
+     */
     public UserView() {
         setTitle("Cadastro de Usuários");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -33,6 +43,12 @@ public class UserView extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Cria o painel de formulário com campos para nome, email, senha
+     * e botão para salvar.
+     *
+     * @return JPanel com o formulário.
+     */
     private JPanel createFormPanel() {
         JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createTitledBorder("Informações do Usuário"));
@@ -85,10 +101,13 @@ public class UserView extends JFrame {
         return panel;
     }
 
+    /**
+     * Carrega todos os usuários através do controller e exibe na interface.
+     */
     private void loadUsers() {
         userListPanel.removeAll();
         userListPanel.setLayout(new BoxLayout(userListPanel, BoxLayout.Y_AXIS));
-        List<User> users = userRepository.findAll();
+        List<User> users = userController.getAllUsers();
 
         for (User user : users) {
             JPanel userCard = new JPanel(new BorderLayout(10, 10));
@@ -114,7 +133,7 @@ public class UserView extends JFrame {
             deleteButton.addActionListener(e -> {
                 int confirm = JOptionPane.showConfirmDialog(this, "Deseja realmente deletar este usuário?", "Confirmação", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
-                    userRepository.delete(user.getId().toString());
+                    userController.deleteUser(user.getId().toString());
                     loadUsers();
                 }
             });
@@ -134,6 +153,11 @@ public class UserView extends JFrame {
         userListPanel.repaint();
     }
 
+    /**
+     * Preenche o formulário com os dados do usuário selecionado para edição.
+     *
+     * @param user Usuário a ser editado.
+     */
     private void fillFormForEdit(User user) {
         nameField.setText(user.getName());
         emailField.setText(user.getEmail());
@@ -141,6 +165,11 @@ public class UserView extends JFrame {
         editingUser = user;
     }
 
+    /**
+     * Salva um novo usuário ou atualiza um existente,
+     * dependendo se está editando ou não.
+     * Valida campos antes de salvar.
+     */
     private void saveUser() {
         String name = nameField.getText();
         String email = emailField.getText();
@@ -152,23 +181,19 @@ public class UserView extends JFrame {
         }
 
         if (editingUser != null) {
-            editingUser.setName(name);
-            editingUser.setEmail(email);
-            editingUser.setPassword(password);
-            userRepository.update(editingUser);
+            userController.updateUser(editingUser, name, email, password);
             editingUser = null;
         } else {
-            User user = new User();
-            user.setName(name);
-            user.setEmail(email);
-            user.setPassword(password);
-            userRepository.save(user);
+            userController.saveUser(name, email, password);
         }
 
         clearFields();
         loadUsers();
     }
 
+    /**
+     * Limpa os campos do formulário.
+     */
     private void clearFields() {
         nameField.setText("");
         emailField.setText("");
