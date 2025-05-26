@@ -37,6 +37,25 @@ public class UserRepository {
         userCollection.insertOne(doc);
     }
 
+    public List<User> findByName(String name) {
+        List<User> users = new ArrayList<>();
+        try (MongoCursor<Document> cursor = userCollection.find(
+                Filters.regex("name", ".*" + name + ".*", "i") // busca que contém, ignorando maiúsculas/minúsculas
+        ).iterator()) {
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                User user = new User();
+                user.setId(doc.getObjectId("_id"));
+                user.setName(doc.getString("name"));
+                user.setEmail(doc.getString("email"));
+                user.setPassword(doc.getString("password"));
+                users.add(user);
+            }
+        }
+        return users;
+    }
+
+
     /**
      * Busca e retorna todos os usuários cadastrados.
      *
@@ -58,16 +77,18 @@ public class UserRepository {
 
     /**
      * Atualiza os dados de um usuário existente na coleção,
-     * identificando pelo email.
+     * identificando pelo ID.
      *
      * @param user Usuário com dados atualizados.
      */
     public void update(User user) {
-        Document filter = new Document("email", user.getEmail());
+        Document filter = new Document("_id", user.getId());
         Document update = new Document("$set", new Document("name", user.getName())
+                .append("email", user.getEmail())
                 .append("password", user.getPassword()));
         userCollection.updateOne(filter, update);
     }
+
 
     /**
      * Busca um usuário pelo seu ID.
