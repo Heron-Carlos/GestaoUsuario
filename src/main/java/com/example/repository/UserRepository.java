@@ -117,4 +117,18 @@ public class UserRepository {
     public void delete(String id) {
         userCollection.deleteOne(Filters.eq("_id", new ObjectId(id)));
     }
+
+    public User findByEmail(String email) {
+        Document doc = userCollection.find(Filters.eq("email", email)).first();
+        if (doc != null) {
+            User user = new User();
+            user.setId(doc.getObjectId("_id"));
+            user.setName(doc.getString("name"));
+            user.setEmail(doc.getString("email"));
+            user.setPassword(doc.getString("password"));
+            return user;
+        }
+        return null;
+    }
+
 }

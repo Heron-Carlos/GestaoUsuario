@@ -21,6 +21,9 @@ public class UserView extends JFrame {
     private JTextField txtEmail;
     private JPasswordField txtSenha;
     private JTextField txtBuscar;
+    private JComboBox<String> cmbFiltro;
+
+
 
     private User selectedUser = null; // Usuário selecionado para edição
 
@@ -46,6 +49,7 @@ public class UserView extends JFrame {
         JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         panel.setLayout(new BorderLayout(10, 10));
+
 
         // Painel do formulário de cadastro/edição
         JPanel formPanel = new JPanel();
@@ -92,10 +96,17 @@ public class UserView extends JFrame {
 
         // Painel de busca por nome
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        searchPanel.add(new JLabel("Buscar por nome:"));
+        searchPanel.add(new JLabel("Buscar por:"));
+
+        cmbFiltro = new JComboBox<>(new String[]{"Nome", "ID", "Email"});
+        searchPanel.add(cmbFiltro);
+
         txtBuscar = new JTextField(20);
+        searchPanel.add(txtBuscar);
+
         JButton btnBuscar = new JButton("Buscar");
         JButton btnMostrarTodos = new JButton("Mostrar Todos");
+
         searchPanel.add(txtBuscar);
         searchPanel.add(btnBuscar);
         searchPanel.add(btnMostrarTodos);
@@ -163,11 +174,27 @@ public class UserView extends JFrame {
 
         // Buscar usuários por nome
         btnBuscar.addActionListener(e -> {
-            String nome = txtBuscar.getText();
-            if (!nome.isEmpty()) {
-                carregarTabelaPorNome(nome);
+            String termo = txtBuscar.getText().trim();
+            String filtro = cmbFiltro.getSelectedItem().toString();
+
+            if (termo.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Digite um termo para buscar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            switch (filtro) {
+                case "Nome":
+                    carregarTabelaPorNome(termo);
+                    break;
+                case "ID":
+                    carregarTabelaPorId(termo);
+                    break;
+                case "Email":
+                    carregarTabelaPorEmail(termo);
+                    break;
             }
         });
+
 
         // Mostrar todos os usuários
         btnMostrarTodos.addActionListener(e -> {
@@ -258,4 +285,23 @@ public class UserView extends JFrame {
         selectedUser = null;
         table.clearSelection();
     }
+
+    private void carregarTabelaPorId(String id) {
+        User user = userRepository.findById(new org.bson.types.ObjectId(id));
+        if (user != null) {
+            preencherTabela(List.of(user));
+        } else {
+            JOptionPane.showMessageDialog(this, "Usuário não encontrado.", "Info", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void carregarTabelaPorEmail(String email) {
+        User user = userRepository.findByEmail(email);
+        if (user != null) {
+            preencherTabela(List.of(user));
+        } else {
+            JOptionPane.showMessageDialog(this, "Usuário não encontrado.", "Info", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
 }
