@@ -18,7 +18,7 @@ Este é um sistema desktop desenvolvido em **Java Swing** com persistência em *
 
 ## 🖼️ Interface da Aplicação
 
-![image](https://github.com/user-attachments/assets/80880fc2-fa4b-486f-889b-6c2d0548340f)
+![image](https://github.com/user-attachments/assets/392665e6-6806-4e63-a463-b249ea3c7c4a)
 
 
 
